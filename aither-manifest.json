@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1",
+  "name": "awrecurse",
+  "description": "Answer a question over a context far larger than the window — recursively, with the trace kept.",
+  "url": "https://aitherium.github.io/awrecurse/",
+  "repository": "https://github.com/Aitherium/awrecurse",
+  "kind": "tool",
+  "status": "planned",
+  "adopt": "Ask a question about a document far bigger than your model's context, and get an answer that names which parts it actually read.",
+  "pairs_with": [
+    "awreason",
+    "awm",
+    "awfind"
+  ],
+  "includes": []
+}
