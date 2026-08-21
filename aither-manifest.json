@@ -5,7 +5,7 @@
   "url": "https://aitherium.github.io/awrecurse/",
   "repository": "https://github.com/Aitherium/awrecurse",
   "kind": "tool",
-  "status": "planned",
+  "status": "public",
   "adopt": "Ask a question about a document far bigger than your model's context, and get an answer that names which parts it actually read.",
   "pairs_with": [
     "awreason",
