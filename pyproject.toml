@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "awrecurse"
-version = "0.1.0"
+version = "0.2.0"
 description = "Answer a question over a context far larger than the model's window — recursively, with the trace kept."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -321,3 +321,24 @@ Every repository here is public. Each publishes an `aither-manifest.json` beside
 <script src="aither-constellation.js"></script>
 
 <!-- aither-ecosystem:end -->
+
+## Rank wide, read narrow (0.2.0)
+
+By default slices are read in document order until the iteration budget runs
+out. Pass a `ranker` and the budget goes to the slices most likely to answer:
+
+```python
+from awrecurse import RecursionEngine
+from awrecurse.ranker import DecideRanker
+
+engine = RecursionEngine(complete_fn, max_iterations=8, ranker=DecideRanker())
+result = engine.recurse(big_context, "What is the launch code?")
+```
+
+`DecideRanker` asks an AitherOS decision door (`AITHER_DECIDE_URL`, one
+`POST /decide/batch` for every slice, kind `yesno`) and reads in descending
+P(yes). Every slice it reads is reported back (`answered` / `NOT_FOUND`), so the
+door learns which slices answer which shape of question -- the next question
+over the same corpus is ranked from evidence, with no model call for slices it
+already knows. If the door is unreachable the ranker returns document order and
+records why in `ranker.last_error`; the read never fails because of it.

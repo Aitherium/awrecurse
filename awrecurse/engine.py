@@ -86,7 +86,8 @@ class RecursionEngine:
 
     def __init__(self, complete_fn: Optional[Callable[[str], str]] = None, *,
                  chunk_size: int = DEFAULT_CHUNK_SIZE,
-                 max_iterations: int = DEFAULT_MAX_ITERATIONS) -> None:
+                 max_iterations: int = DEFAULT_MAX_ITERATIONS,
+                 ranker: Optional[object] = None) -> None:
         """
         complete_fn: A callable(prompt: str) -> str that completes a prompt.
                      If None, you must pass backend_url and token to recurse().
@@ -94,10 +95,18 @@ class RecursionEngine:
                     less context per call; larger = fewer calls but more risk
                     of overflow.
         max_iterations: Maximum recursive calls. Prevents runaway loops.
+        ranker: Optional. An object with `rank(query, chunks) -> chunks` (and
+                optionally `outcome(start, answered)`) that decides the ORDER
+                slices are read in, so the iteration budget goes to the slices
+                most likely to answer. See awrecurse.ranker.DecideRanker --
+                it asks the AitherOS decision door and teaches it what each
+                slice actually yielded. None = document order (the old path).
         """
         self.complete_fn = complete_fn
         self.chunk_size = chunk_size
         self.max_iterations = max_iterations
+        self.ranker = ranker
+        self.last_ranker_error: Optional[str] = None
 
     def chunk_context(self, context: str) -> list[tuple[int, str]]:
         """Split context into (start_char, chunk_text) tuples.
@@ -158,14 +167,29 @@ class RecursionEngine:
         answers = []
         iterations = 0
 
-        # Try each chunk in sequence. Stop early once we have at least one answer
-        # and have checked a reasonable portion, to avoid querying the whole context.
-        for start_char, chunk_text in chunks:
+        # Rank wide, read narrow: a ranker spends the iteration budget on the
+        # slices most likely to answer; without one, document order.
+        ordered = chunks
+        self.last_ranker_error = None
+        if self.ranker is not None:
+            try:
+                ordered = list(self.ranker.rank(query, chunks)) or chunks
+            except Exception as exc:  # a ranker must never cost the read itself
+                self.last_ranker_error = f"ranker failed, document order: {exc}"
+                ordered = chunks
+        report = getattr(self.ranker, "outcome", None)
+
+        for start_char, chunk_text in ordered:
             if iterations >= self.max_iterations:
                 break
 
             iterations += 1
             answer = self.query_chunk(chunk_text, query)
+            if report is not None:
+                try:
+                    report(start_char, bool(answer))
+                except Exception as exc:  # teaching is best-effort; the read already happened
+                    self.last_ranker_error = f"outcome not recorded: {exc}"
             if answer:
                 answers.append(answer)
                 slices_read.append((start_char, start_char + len(chunk_text)))
