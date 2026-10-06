@@ -1,0 +1,36 @@
+# awrecurse
+
+> Answer a question over a context far larger than the window — recursively, with the trace kept.
+
+A context window that overflows does not raise. The middle is dropped, the model answers fluently from the ends, and the reply looks exactly like one drawn from the whole document. The failure is a SILENCE — no error, no truncation warning, no shorter answer — and the only signal is that it is quietly wrong about the part nobody checked.
+
+## Install
+
+```
+pip install awrecurse
+```
+
+## In Claude Code
+
+- skill: `/awrecurse`
+
+## Use it in 30 seconds
+
+Ask a question about a document far bigger than your model's context, and get an answer that names which parts it actually read.
+
+## Composes with
+
+- [awreason](https://aitherium.github.io/awreason/) — A portable reasoning client — sessions, phases, thoughts, and the chain that produced the answer.
+- [awm](https://aitherium.github.io/awm/) — A portable, scoped agent memory.
+- [awfind](https://aitherium.github.io/awfind/) — A portable search client — query, results, ranking.
+- [awembed](https://aitherium.github.io/awembed/) — Train an embedding model that knows your corpus, and prove it beats the big one.
+
+## Where it lives
+
+- Repo: https://github.com/Aitherium/awrecurse
+- Docs: https://aitherium.github.io/awrecurse/
+- Manifest (keys + the one-line adoption story): https://aitherium.github.io/awrecurse/aither-manifest.json
+
+This repository is mirrored from the AitherOS monorepo by `.github/workflows/sync-awrecurse.yml`; hand edits made here are overwritten on the next sync — change the source instead.
+
+Everything Aitherium, in one file for agents: https://aitherium.com/llms.txt
