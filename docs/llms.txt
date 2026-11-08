@@ -10,10 +10,6 @@ A context window that overflows does not raise. The middle is dropped, the model
 pip install awrecurse
 ```
 
-## In Claude Code
-
-- skill: `/awrecurse`
-
 ## Use it in 30 seconds
 
 Ask a question about a document far bigger than your model's context, and get an answer that names which parts it actually read.
