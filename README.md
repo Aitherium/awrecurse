@@ -4,7 +4,7 @@
 
 **[Docs](https://aitherium.github.io/awrecurse/)**  ·  [Source](https://github.com/Aitherium/awrecurse)  ·  `pip install awrecurse`  ·  [The Aither World](https://aitherium.github.io/)
 
-> **The Aither World** is an operating system for agents — a Linux you can hand to one, the runtimes it works in, and the tools it works with. [awnix](https://github.com/Aitherium/awnix) is the Linux underneath it; **awrecurse** is one of its 72 bricks — each installs on its own, runs offline, and needs no account. 6 more are in development and 19 are planned.
+> **The Aither World** is an operating system for agents — a Linux you can hand to one, the runtimes it works in, and the tools it works with. [awnix](https://github.com/Aitherium/awnix) is the Linux underneath it; **awrecurse** is one of its 72 bricks — each installs on its own, runs offline, and needs no account. 6 more are in development and 23 are planned.
 >
 > **Start here:** Ask a question about a document far bigger than your model's context, and get an answer that names which parts it actually read.
 
@@ -171,6 +171,29 @@ requires different plumbing — the service would handle it, not the client.
 
 ---
 
+## Rank wide, read narrow (0.2.0)
+
+By default slices are read in document order until the iteration budget runs
+out. Pass a `ranker` and the budget goes to the slices most likely to answer:
+
+```python
+from awrecurse import RecursionEngine
+from awrecurse.ranker import DecideRanker
+
+engine = RecursionEngine(complete_fn, max_iterations=8, ranker=DecideRanker())
+result = engine.recurse(big_context, "What is the launch code?")
+```
+
+`DecideRanker` asks an AitherOS decision door (`AITHER_DECIDE_URL`, one
+`POST /decide/batch` for every slice, kind `yesno`) and reads in descending
+P(yes). Every slice it reads is reported back (`answered` / `NOT_FOUND`), so the
+door learns which slices answer which shape of question -- the next question
+over the same corpus is ranked from evidence, with no model call for slices it
+already knows. If the door is unreachable the ranker returns document order and
+records why in `ranker.last_error`; the read never fails because of it.
+
+---
+
 ## See also
 
 - [RLM paper](https://arxiv.org/abs/2512.24601) — Zhang, Kraska & Khattab
@@ -248,7 +271,7 @@ Each installs on its own, works offline, and needs no account.
 | [awsettings](https://github.com/Aitherium/awsettings) | that you will remember to re-approve the same thing on every box you work from | one profile, unioned rather than overwritten, with the credentials left behind |
 | [awavatar](https://github.com/Aitherium/awavatar) | a cloud 3D vendor's opaque task id | a manifest with a sha256, a licence and a rig-audit verdict per file |
 
-[**awnix**](https://github.com/Aitherium/awnix) is the ground floor — A Linux you can hand to an agent — immutable base, capabilities included.
+[**awnix**](https://github.com/Aitherium/awnix) is the ground floor — A Linux you can hand to an agent — immutable x86_64 & ARM64 (aarch64) base, capabilities included.
 
 ## The Aitherium ecosystem
 
@@ -282,7 +305,7 @@ Every repository here is public. Each publishes an `aither-manifest.json` beside
 | [awnest](https://github.com/Aitherium/awnest) | Prove there is a human before you let them into the nest | [docs](https://aitherium.github.io/awnest/) |
 | [awrena](https://github.com/Aitherium/awrena) | Put two agents head to head and get a verdict you can check | [docs](https://aitherium.github.io/awrena/) |
 | [awnboard](https://github.com/Aitherium/awnboard) | A front gate you can put in front of anything, and hand someone the key to | [docs](https://aitherium.github.io/awnboard/) |
-| [awnix](https://github.com/Aitherium/awnix) | A Linux you can hand to an agent — immutable base, capabilities included | [docs](https://aitherium.github.io/awnix/) |
+| [awnix](https://github.com/Aitherium/awnix) | A Linux you can hand to an agent — immutable x86_64 & ARM64 (aarch64) base, capabilities included | [docs](https://aitherium.github.io/awnix/) |
 | [awrecover](https://github.com/Aitherium/awrecover) | Labelled snapshots with an all-or-nothing restore | [docs](https://aitherium.github.io/awrecover/) |
 | [awstorage](https://github.com/Aitherium/awstorage) | Every drive on every node, indexed, classified and diffed -- so you can see what you own before you delete it | [docs](https://aitherium.github.io/awstorage/) |
 | [awrelay](https://github.com/Aitherium/awrelay) | Portable agent messaging — findings, alerts, coordination | [docs](https://aitherium.github.io/awrelay/) |
@@ -335,24 +358,3 @@ Every repository here is public. Each publishes an `aither-manifest.json` beside
 <script src="aither-constellation.js"></script>
 
 <!-- aither-ecosystem:end -->
-
-## Rank wide, read narrow (0.2.0)
-
-By default slices are read in document order until the iteration budget runs
-out. Pass a `ranker` and the budget goes to the slices most likely to answer:
-
-```python
-from awrecurse import RecursionEngine
-from awrecurse.ranker import DecideRanker
-
-engine = RecursionEngine(complete_fn, max_iterations=8, ranker=DecideRanker())
-result = engine.recurse(big_context, "What is the launch code?")
-```
-
-`DecideRanker` asks an AitherOS decision door (`AITHER_DECIDE_URL`, one
-`POST /decide/batch` for every slice, kind `yesno`) and reads in descending
-P(yes). Every slice it reads is reported back (`answered` / `NOT_FOUND`), so the
-door learns which slices answer which shape of question -- the next question
-over the same corpus is ranked from evidence, with no model call for slices it
-already knows. If the door is unreachable the ranker returns document order and
-records why in `ranker.last_error`; the read never fails because of it.
